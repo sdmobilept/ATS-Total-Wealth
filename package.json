@@ -1,0 +1,34 @@
+{
+  "name": "ats-total-wealth",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "data:fetch": "node scripts/fetch-data.ts",
+    "data:build": "node scripts/build-data.ts",
+    "data:coverage": "node scripts/coverage.ts",
+    "data:backtest": "node --max-old-space-size=8192 scripts/backtest.ts",
+    "data:refresh": "npm run data:fetch && npm run data:build && npm run data:coverage",
+    "test": "node --test scripts/engine.test.ts"
+  },
+  "dependencies": {
+    "next": "16.3.7",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "recharts": "^3.10.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.7",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

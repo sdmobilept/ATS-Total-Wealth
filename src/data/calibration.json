@@ -1,0 +1,405 @@
+{
+  "generatedAt": "2026-09-30T06:39:45.653Z",
+  "dataThrough": "2026-08",
+  "method": "Walk-forward: forecasts from Dec 2008–Dec 2025, each made with parameters fitted only on outcomes known at the time",
+  "nCases": 971439,
+  "nOutOfSample": 848844,
+  "params": {
+    "momentumWeight": 1,
+    "trendMethod": "loglinear",
+    "fadeYears": 1,
+    "anchorMode": "inflation",
+    "realPremium": 0.03,
+    "bandScale": 0.8915152087243082,
+    "bandExponent": 1.0110439546504808
+  },
+  "fits": [
+    {
+      "year": 2008,
+      "params": "w=1 loglinear τ=0.5 inflation+0%"
+    },
+    {
+      "year": 2009,
+      "params": "w=1 loglinear τ=0.5 inflation+0%"
+    },
+    {
+      "year": 2010,
+      "params": "w=1 loglinear τ=0.5 inflation+0%"
+    },
+    {
+      "year": 2011,
+      "params": "w=1 loglinear τ=0.5 inflation+0%"
+    },
+    {
+      "year": 2012,
+      "params": "w=1 loglinear τ=1 inflation+0%"
+    },
+    {
+      "year": 2013,
+      "params": "w=1 loglinear τ=1 inflation+0%"
+    },
+    {
+      "year": 2014,
+      "params": "w=1 loglinear τ=1 inflation+0%"
+    },
+    {
+      "year": 2015,
+      "params": "w=1 loglinear τ=0.5 inflation+0%"
+    },
+    {
+      "year": 2016,
+      "params": "w=1 loglinear τ=0.5 inflation+0%"
+    },
+    {
+      "year": 2017,
+      "params": "w=1 loglinear τ=1 inflation+0%"
+    },
+    {
+      "year": 2018,
+      "params": "w=1 loglinear τ=1 inflation+0%"
+    },
+    {
+      "year": 2019,
+      "params": "w=1 loglinear τ=1 inflation+0%"
+    },
+    {
+      "year": 2020,
+      "params": "w=1 loglinear τ=1 inflation+1%"
+    },
+    {
+      "year": 2021,
+      "params": "w=1 loglinear τ=1 inflation+2%"
+    },
+    {
+      "year": 2022,
+      "params": "w=1 loglinear τ=1 inflation+2%"
+    },
+    {
+      "year": 2023,
+      "params": "w=1 loglinear τ=1 inflation+3%"
+    },
+    {
+      "year": 2024,
+      "params": "w=1 loglinear τ=1 inflation+3%"
+    },
+    {
+      "year": 2025,
+      "params": "w=1 loglinear τ=1 inflation+3%"
+    }
+  ],
+  "bandByHorizon": [
+    {
+      "h": 1,
+      "k": 0.8927374498790152
+    },
+    {
+      "h": 3,
+      "k": 2.6955331837861265
+    },
+    {
+      "h": 5,
+      "k": 4.550905217757374
+    }
+  ],
+  "coverage": [
+    {
+      "h": 1,
+      "coverage": 0.7995529038592252
+    },
+    {
+      "h": 3,
+      "coverage": 0.8014985251990893
+    },
+    {
+      "h": 5,
+      "coverage": 0.7988853394956841
+    }
+  ],
+  "rateBeta": {
+    "all": 0.04056721948910159,
+    "pre2020": 0.14524010652790198
+  },
+  "metrics": [
+    {
+      "model": "Flat 5% / yr (InsMark default)",
+      "h": 1,
+      "mae": 0.05029360875319335,
+      "bias": 0.0062338505564936905,
+      "beatsFlat": 0,
+      "n": 331025
+    },
+    {
+      "model": "Hold 5-yr CAGR",
+      "h": 1,
+      "mae": 0.056627513088930194,
+      "bias": -0.005364032615892982,
+      "beatsFlat": 0.45042217355184655,
+      "n": 331025
+    },
+    {
+      "model": "Hold last 12 months",
+      "h": 1,
+      "mae": 0.04779683202915761,
+      "bias": -0.0029668254141488326,
+      "beatsFlat": 0.532542859300657,
+      "n": 331025
+    },
+    {
+      "model": "Inflation + 1%",
+      "h": 1,
+      "mae": 0.0529888750997937,
+      "bias": -0.01058609781581336,
+      "beatsFlat": 0.47017898950230347,
+      "n": 331025
+    },
+    {
+      "model": "Trend model (walk-forward)",
+      "h": 1,
+      "mae": 0.04384675169007838,
+      "bias": -0.0034366012874009126,
+      "beatsFlat": 0.5649210784683937,
+      "n": 331025
+    },
+    {
+      "model": "Flat 5% / yr (InsMark default)",
+      "h": 3,
+      "mae": 0.11677027368273504,
+      "bias": -0.003213106361050275,
+      "beatsFlat": 0,
+      "n": 282411
+    },
+    {
+      "model": "Hold 5-yr CAGR",
+      "h": 3,
+      "mae": 0.15842411387853353,
+      "bias": -0.0585957607273779,
+      "beatsFlat": 0.3971481280828296,
+      "n": 282411
+    },
+    {
+      "model": "Hold last 12 months",
+      "h": 3,
+      "mae": 0.15597855649376283,
+      "bias": -0.027914564971568148,
+      "beatsFlat": 0.43287619816508566,
+      "n": 282411
+    },
+    {
+      "model": "Inflation + 1%",
+      "h": 3,
+      "mae": 0.13351502001546384,
+      "bias": -0.057027505642782354,
+      "beatsFlat": 0.3918438021181894,
+      "n": 282411
+    },
+    {
+      "model": "Trend model (walk-forward)",
+      "h": 3,
+      "mae": 0.1254059858188975,
+      "bias": -0.05278005061507776,
+      "beatsFlat": 0.4075372418213172,
+      "n": 282411
+    },
+    {
+      "model": "Flat 5% / yr (InsMark default)",
+      "h": 5,
+      "mae": 0.1573835868866118,
+      "bias": -0.036134192342862546,
+      "beatsFlat": 0,
+      "n": 235408
+    },
+    {
+      "model": "Hold 5-yr CAGR",
+      "h": 5,
+      "mae": 0.25366997323642054,
+      "bias": -0.17896604609702932,
+      "beatsFlat": 0.35406613199211584,
+      "n": 235408
+    },
+    {
+      "model": "Hold last 12 months",
+      "h": 5,
+      "mae": 0.2588342108382752,
+      "bias": -0.1417293951647216,
+      "beatsFlat": 0.3764060694623802,
+      "n": 235408
+    },
+    {
+      "model": "Inflation + 1%",
+      "h": 5,
+      "mae": 0.19961201442985832,
+      "bias": -0.12835319558006608,
+      "beatsFlat": 0.316454835859444,
+      "n": 235408
+    },
+    {
+      "model": "Trend model (walk-forward)",
+      "h": 5,
+      "mae": 0.20134779426020388,
+      "bias": -0.15790228603123946,
+      "beatsFlat": 0.3033626724665262,
+      "n": 235408
+    }
+  ],
+  "eras": [
+    {
+      "label": "2008–2011 (bust)",
+      "metrics": [
+        {
+          "model": "Flat 5% / yr (InsMark default)",
+          "h": 1,
+          "mae": 0.08772125654488713,
+          "bias": 0.08020476875438373,
+          "beatsFlat": 0,
+          "n": 60265
+        },
+        {
+          "model": "Trend model (walk-forward)",
+          "h": 1,
+          "mae": 0.052928479348219405,
+          "bias": 0.02686997735748183,
+          "beatsFlat": 0.8333858790342653,
+          "n": 60265
+        },
+        {
+          "model": "Flat 5% / yr (InsMark default)",
+          "h": 3,
+          "mae": 0.18373655136689895,
+          "bias": 0.14942269458118462,
+          "beatsFlat": 0,
+          "n": 60265
+        },
+        {
+          "model": "Trend model (walk-forward)",
+          "h": 3,
+          "mae": 0.1269965932944351,
+          "bias": 0.043357917448427444,
+          "beatsFlat": 0.772869824939849,
+          "n": 60265
+        },
+        {
+          "model": "Flat 5% / yr (InsMark default)",
+          "h": 5,
+          "mae": 0.19897444658072658,
+          "bias": 0.13960013965212947,
+          "beatsFlat": 0,
+          "n": 60265
+        },
+        {
+          "model": "Trend model (walk-forward)",
+          "h": 5,
+          "mae": 0.1471044926079177,
+          "bias": -0.01489429407512364,
+          "beatsFlat": 0.6860698581266075,
+          "n": 60265
+        }
+      ]
+    },
+    {
+      "label": "2012–2019 (recovery)",
+      "metrics": [
+        {
+          "model": "Flat 5% / yr (InsMark default)",
+          "h": 1,
+          "mae": 0.03681224420138236,
+          "bias": -0.012366371010105532,
+          "beatsFlat": 0,
+          "n": 153232
+        },
+        {
+          "model": "Trend model (walk-forward)",
+          "h": 1,
+          "mae": 0.0389788497783106,
+          "bias": -0.024255675424614043,
+          "beatsFlat": 0.4565234415787825,
+          "n": 153232
+        },
+        {
+          "model": "Flat 5% / yr (InsMark default)",
+          "h": 3,
+          "mae": 0.10144770592411882,
+          "bias": -0.060904068798106024,
+          "beatsFlat": 0,
+          "n": 153232
+        },
+        {
+          "model": "Trend model (walk-forward)",
+          "h": 3,
+          "mae": 0.13477252768352496,
+          "bias": -0.12402157067804746,
+          "beatsFlat": 0.2470763287041871,
+          "n": 153232
+        },
+        {
+          "model": "Flat 5% / yr (InsMark default)",
+          "h": 5,
+          "mae": 0.14840251422504583,
+          "bias": -0.10334700281064163,
+          "beatsFlat": 0,
+          "n": 153232
+        },
+        {
+          "model": "Trend model (walk-forward)",
+          "h": 5,
+          "mae": 0.23367982749976288,
+          "bias": -0.22464675630194667,
+          "beatsFlat": 0.1554701367860499,
+          "n": 153232
+        }
+      ]
+    },
+    {
+      "label": "2020–2025 (pandemic & rate shock)",
+      "metrics": [
+        {
+          "model": "Flat 5% / yr (InsMark default)",
+          "h": 1,
+          "mae": 0.04867866813339684,
+          "bias": -0.0074455129492459644,
+          "beatsFlat": 0,
+          "n": 117528
+        },
+        {
+          "model": "Trend model (walk-forward)",
+          "h": 1,
+          "mae": 0.04553663008864043,
+          "bias": 0.008166781788629111,
+          "beatsFlat": 0.5685879109658974,
+          "n": 117528
+        },
+        {
+          "model": "Flat 5% / yr (InsMark default)",
+          "h": 3,
+          "mae": 0.09227866063097787,
+          "bias": -0.008415169622924526,
+          "beatsFlat": 0,
+          "n": 68914
+        },
+        {
+          "model": "Trend model (walk-forward)",
+          "h": 3,
+          "mae": 0.1031882665961888,
+          "bias": 0.021555004046418434,
+          "beatsFlat": 0.44484429869112224,
+          "n": 68914
+        },
+        {
+          "model": "Flat 5% / yr (InsMark default)",
+          "h": 5,
+          "mae": 0.10579829030550023,
+          "bias": -0.04943692357736955,
+          "beatsFlat": 0,
+          "n": 21911
+        },
+        {
+          "model": "Trend model (walk-forward)",
+          "h": 5,
+          "mae": 0.12443074148811548,
+          "bias": -0.08446830158116521,
+          "beatsFlat": 0.2850166582994843,
+          "n": 21911
+        }
+      ]
+    }
+  ]
+}
