@@ -81,19 +81,21 @@ await readCsv(join(RAW, "zhvf_zip.csv"), (row, header) => {
 
 // ---- ZIP price tiers (bottom and top third of homes) --------------------------------
 /** Keeps a tier only if it runs through the latest month, so it lines up with the middle tier. */
-async function readTier(file: string): Promise<Map<string, EncodedSeries>> {
+async function readTier(file: string, unit = 100): Promise<Map<string, EncodedSeries>> {
   const out = new Map<string, EncodedSeries>();
   await readCsv(join(RAW, file), (row, header) => {
-    const dateStart = header.indexOf("2000-01-31");
+    const dateStart = header.findIndex((h) => /^\d{4}-\d{2}-\d{2}$/.test(h));
     const s = cleanSeries(header.slice(dateStart), row.slice(dateStart));
     const last = header[header.length - 1].slice(0, 7);
     if (!s || monthIndex(s.start) + s.v.length - 1 !== monthIndex(last)) return;
-    out.set(row[header.indexOf("RegionName")].padStart(5, "0"), encodeSeries(s.start, s.v));
+    out.set(row[header.indexOf("RegionName")].padStart(5, "0"), encodeSeries(s.start, s.v, unit));
   });
   return out;
 }
 const bottomTier = await readTier("zhvi_zip_bottom.csv");
 const topTier = await readTier("zhvi_zip_top.csv");
+// Rents need dollar precision.
+const rents = await readTier("zori_zip.csv", 1);
 
 // ---- ZIPs -----------------------------------------------------------------------
 const zips: Record<string, ZipShard> = {};
@@ -118,6 +120,7 @@ await readCsv(join(RAW, "zhvi_zip.csv"), (row, header) => {
       middle: encodeSeries(s.start, s.v),
       top: topTier.get(zip) ?? null,
     },
+    rent: rents.get(zip) ?? null,
     forecast: forecasts.get(zip) ?? null,
   };
   zipCount++;
@@ -150,7 +153,7 @@ writeFileSync(join(OUT, "macro.json"), JSON.stringify(macro));
 
 console.log(
   `Wrote ${zipCount} ZIPs in ${Object.keys(zips).length} shards, ` +
-    `${countyFipsByName.size} counties, ${bottomTier.size}/${topTier.size} bottom/top tiers; data through ${dataThrough}; ` +
+    `${countyFipsByName.size} counties, ${bottomTier.size}/${topTier.size} bottom/top tiers, ${rents.size} rent series; data through ${dataThrough}; ` +
     `30y mortgage ${macro.mortgage.latest}% (${macro.mortgage.latestDate}); ` +
     `10y CPI ${(macro.inflation10y * 100).toFixed(2)}%/yr`,
 );

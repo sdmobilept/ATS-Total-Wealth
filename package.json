@@ -13,7 +13,7 @@
     "data:coverage": "node scripts/coverage.ts",
     "data:backtest": "node --max-old-space-size=8192 scripts/backtest.ts",
     "data:refresh": "npm run data:fetch && npm run data:build && npm run data:coverage",
-    "test": "node --test scripts/engine.test.ts"
+    "test": "node --test scripts/engine.test.ts scripts/wealth.test.ts"
   },
   "dependencies": {
     "next": "16.3.7",

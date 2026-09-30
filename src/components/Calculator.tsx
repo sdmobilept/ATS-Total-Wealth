@@ -23,6 +23,12 @@ import { monthLabel, normInv, ordinal, pct, signedPct, usd, usdCompact } from "@
 import { ProjectionChart, type ChartRow } from "./ProjectionChart";
 import { Slider } from "./Slider";
 import { WealthTable, type WealthRow } from "./WealthTable";
+import { breakEvenReturn, cashFlows, keepVsSell, simulate, type CashFlowInputs } from "@/lib/wealth";
+import { CashFlowPanel, DEFAULT_CASH_FLOW, type CashFlowSettings } from "./CashFlowPanel";
+import { RiskPanel } from "./RiskPanel";
+
+const SIM_PATHS = 2000;
+const SAMPLE_PATHS = 25;
 
 const EXAMPLES = ["77494", "94110", "60614", "08701"];
 const PRESETS = [
@@ -160,6 +166,8 @@ export function Calculator() {
   const [params, setParams] = useState<ModelParams | null>(null);
   const [useZillowY1, setUseZillowY1] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showPaths, setShowPaths] = useState(false);
+  const [cf, setCf] = useState<CashFlowSettings>(DEFAULT_CASH_FLOW);
 
   useEffect(() => {
     loadMacro().then((m) => {
@@ -200,6 +208,8 @@ export function Calculator() {
       setLocation(loc);
       setAvm(value);
       setTierChoice("auto");
+      // Rent and insurance defaults follow the new location until the user edits them.
+      setCf((c) => ({ ...c, rent: null, rentGrowth: null, insurance: null }));
       const hasPurchase = parseMoney(paid) > 0 && Number(year) > 0;
       const url = new URLSearchParams({ q });
       if (hasPurchase) {
@@ -322,6 +332,77 @@ export function Calculator() {
     };
   }, [location, tierInfo, stats, params, macro, valueMode, currentValue, purchasePrice, purchaseYear, loanBalance, loanRate, loanYears, horizon, flatRate, pctile, useZillowY1]);
 
+  // ---- Phase 4: Monte Carlo risk ----
+  const sim = useMemo(() => {
+    if (!model || !stats) return null;
+    return simulate(model.value0, stats, model.p, horizon, {
+      paths: SIM_PATHS,
+      seed: 20260930,
+      flatRate,
+      loanBalances: model.balances,
+      samplePaths: SAMPLE_PATHS,
+    });
+  }, [model, stats, horizon, flatRate]);
+
+  // ---- Phase 4: cash flow and keep vs sell ----
+  const cashDefaults = useMemo(() => {
+    if (!model || !params) return null;
+    const rentSeries = location?.rent;
+    const rentStats = rentSeries ? computeStats(rentSeries) : null;
+    const zillowRent = rentSeries ? rentSeries.v[rentSeries.v.length - 1] : null;
+    return {
+      rent: zillowRent ? Math.round(zillowRent / 10) * 10 : Math.round((model.value0 * 0.004) / 50) * 50,
+      rentGrowth: rentStats ? Math.round(rentStats.trend5 * 1000) / 1000 : params.inflation,
+      insurance: Math.round((model.value0 * 0.0035) / 50) * 50,
+      rentNote: zillowRent
+        ? `ZIP typical rent (Zillow${rentStats ? `, 5-yr trend ${signedPct(rentStats.trend5)}/yr` : ""}). Adjust for this home.`
+        : "Rough estimate (0.4% of value/month): no Zillow rent data for this ZIP.",
+    };
+  }, [model, params, location]);
+
+  const cash = useMemo(() => {
+    if (!model || !cashDefaults || !params || cf.occupancy === "off") return null;
+    const inputs: CashFlowInputs = {
+      occupancy: cf.occupancy,
+      monthlyRent: cf.rent ?? cashDefaults.rent,
+      rentGrowth: cf.rentGrowth ?? cashDefaults.rentGrowth,
+      vacancy: cf.vacancy,
+      management: cf.management,
+      propertyTax: cf.taxRate * model.value0,
+      propertyTaxGrowth: cf.taxGrowth,
+      insurance: cf.insurance ?? cashDefaults.insurance,
+      hoaMonthly: cf.hoa,
+      maintenance: cf.maintenance,
+      inflation: params.inflation,
+    };
+    const values = model.table.map((r) => r.value);
+    const flows = cashFlows(values, model.payment, loanYears * 12, inputs);
+    return {
+      flows,
+      keepSell: keepVsSell(values, model.balances, flows, cf.sellingCost, cf.altReturn),
+      breakEven: breakEvenReturn(values, model.balances, flows, cf.sellingCost),
+    };
+  }, [model, cashDefaults, params, cf, loanYears]);
+
+  const chartRows = useMemo(() => {
+    if (!model) return [];
+    if (!showPaths || !sim) return model.rows;
+    const nowIdx = model.rows.length - horizon - 1;
+    return model.rows.map((r, idx) => {
+      const y = idx - nowIdx;
+      if (y < 0) return r;
+      const extra: Record<string, number> = {};
+      sim.samples.forEach((path, i) => (extra[`s${i}`] = path[y]));
+      return { ...r, ...extra };
+    });
+  }, [model, sim, showPaths, horizon]);
+
+  const tableRows = useMemo(() => {
+    if (!model) return [];
+    if (!cash) return model.table;
+    return model.table.map((r) => ({ ...r, cashFlow: cash.flows[r.year - 1]?.cashFlow, keep: cash.keepSell[r.year]?.keep }));
+  }, [model, cash]);
+
   const scenarioLabel = pctile === 50 ? "Your scenario (median)" : `Your scenario (${ordinal(pctile)} pct)`;
   const flatLabel = `Flat ${pct(flatRate, 1)}/yr (InsMark-style)`;
 
@@ -337,10 +418,18 @@ export function Calculator() {
       `# Momentum weight,${p.momentumWeight},Fade years,${p.fadeYears},Anchor,${p.anchorMode},Inflation,${p.inflation},Real premium,${p.realPremium}`,
       `# Mortgage rate now,${p.currentRate},Target,${p.targetRate},Years,${p.rateYears},Rate sensitivity per 1pp,${p.rateSensitivity}`,
       `# Flat comparison rate,${flatRate}`,
-      "Year,Calendar year,Scenario value,Scenario growth %,Median value,10th pct value,90th pct value,Flat value,Loan balance,Equity (scenario),Equity (flat)",
-      ...model.table.map((r) =>
+      ...(sim
+        ? [`# Monte Carlo (${SIM_PATHS} paths),P(beat flat),${sim.pBeatFlat},P(below today),${sim.pLoss},P(20% drop),${sim.pDrawdown20},P(underwater),${sim.pUnderwater}`]
+        : []),
+      ...(cash
+        ? [`# Cash flow,${cf.occupancy},Selling costs,${cf.sellingCost},Alternative return,${cf.altReturn},Break-even return,${cash.breakEven ?? ""}`]
+        : []),
+      "Year,Calendar year,Scenario value,Scenario growth %,Median value,10th pct value,90th pct value,Flat value,Loan balance,Equity (scenario),Equity (flat)" +
+        (cash ? ",Cash flow,Net worth (keep),Net worth (sell & invest)" : ""),
+      ...tableRows.map((r) =>
         [r.year, r.label, r.value, r.growth * 100, r.median, r.low, r.high, r.flat, r.loan, r.equity, r.flatEquity]
           .map((x, i) => (i === 3 ? x.toFixed(2) : i < 2 ? x : Math.round(x)))
+          .concat(cash ? [Math.round(r.cashFlow ?? 0), Math.round(r.keep ?? 0), Math.round(cash.keepSell[r.year]?.sell ?? 0)] : [])
           .join(","),
       ),
     ];
@@ -508,7 +597,13 @@ export function Calculator() {
                 </span>
               }
             >
-              <ProjectionChart rows={model.rows} nowT={model.nowT} scenarioLabel={scenarioLabel} flatLabel={flatLabel} />
+              <ProjectionChart
+                rows={chartRows}
+                nowT={model.nowT}
+                scenarioLabel={scenarioLabel}
+                flatLabel={flatLabel}
+                samplePaths={showPaths && sim ? sim.samples.length : 0}
+              />
               <div className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
                 <div className="rounded-lg bg-card-2 p-3">
                   <div className="text-xs text-muted">Near-term momentum</div>
@@ -660,6 +755,49 @@ export function Calculator() {
               </Card>
             </div>
           </div>
+
+          {/* ---- Risk (Monte Carlo) ---- */}
+          {sim && (
+            <Card title="Risk: simulated outcomes">
+              <RiskPanel sim={sim} paths={SIM_PATHS} flatRate={flatRate} hasLoan={parseMoney(loanBalance) > 0} showPaths={showPaths} onShowPaths={setShowPaths} />
+            </Card>
+          )}
+
+          {/* ---- Cash flow & keep vs sell ---- */}
+          <Card
+            title="Cash flow & keep vs. sell"
+            action={
+              <span className="no-print">
+                <Segmented
+                  value={cf.occupancy}
+                  onChange={(v) => setCf((c) => ({ ...c, occupancy: v }))}
+                  options={[
+                    { value: "off", label: "Off" },
+                    { value: "rental", label: "Rental" },
+                    { value: "primary", label: "My home" },
+                  ]}
+                />
+              </span>
+            }
+          >
+            {cash && cashDefaults ? (
+              <CashFlowPanel
+                settings={cf}
+                onChange={(patch) => setCf((c) => ({ ...c, ...patch }))}
+                defaults={cashDefaults}
+                flows={cash.flows}
+                keepSell={cash.keepSell}
+                breakEven={cash.breakEven}
+                startYear={Number(stats.asOf.slice(0, 4))}
+              />
+            ) : (
+              <p className="text-sm text-ink-2">
+                Add rent, expenses and the mortgage payment to see yearly cash flow and cap rate, and compare keeping the
+                property with selling today and investing the proceeds. Choose <strong>Rental</strong> for an investment
+                property or <strong>My home</strong> for a primary residence.
+              </p>
+            )}
+          </Card>
 
           {/* ---- Advanced ---- */}
           <Card
@@ -817,7 +955,7 @@ export function Calculator() {
 
           {/* ---- Wealth table ---- */}
           <Card title="Year-by-year wealth">
-            <WealthTable rows={model.table} horizon={horizon} flatRate={flatRate} hasLoan={parseMoney(loanBalance) > 0} />
+            <WealthTable rows={tableRows} horizon={horizon} flatRate={flatRate} hasLoan={parseMoney(loanBalance) > 0} showCashFlow={!!cash} />
           </Card>
 
           <p className="text-xs text-muted">

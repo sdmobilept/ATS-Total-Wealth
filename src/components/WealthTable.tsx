@@ -15,6 +15,10 @@ export interface WealthRow {
   loan: number;
   equity: number;
   flatEquity: number;
+  /** Cash flow during the year (only when cash flow is enabled). */
+  cashFlow?: number;
+  /** Net worth from keeping: equity after selling costs + invested cash flows. */
+  keep?: number;
 }
 
 interface Props {
@@ -22,9 +26,10 @@ interface Props {
   horizon: number;
   flatRate: number;
   hasLoan: boolean;
+  showCashFlow?: boolean;
 }
 
-export function WealthTable({ rows, horizon, flatRate, hasLoan }: Props) {
+export function WealthTable({ rows, horizon, flatRate, hasLoan, showCashFlow = false }: Props) {
   const [allYears, setAllYears] = useState(false);
   const shown = allYears || horizon <= 10 ? rows : rows.filter((r) => r.year <= 5 || r.year % 5 === 0);
 
@@ -41,7 +46,9 @@ export function WealthTable({ rows, horizon, flatRate, hasLoan }: Props) {
               <th className="py-2 pr-3 text-right font-medium">Flat {pct(flatRate, 1)}</th>
               <th className="py-2 pr-3 text-right font-medium">Difference</th>
               {hasLoan && <th className="py-2 pr-3 text-right font-medium">Loan</th>}
-              {hasLoan && <th className="py-2 text-right font-medium">Equity</th>}
+              {hasLoan && <th className="py-2 pr-3 text-right font-medium">Equity</th>}
+              {showCashFlow && <th className="py-2 pr-3 text-right font-medium">Cash flow</th>}
+              {showCashFlow && <th className="py-2 text-right font-medium">Net worth (keep)</th>}
             </tr>
           </thead>
           <tbody>
@@ -63,7 +70,13 @@ export function WealthTable({ rows, horizon, flatRate, hasLoan }: Props) {
                     {r.year === 0 ? "–" : `${diff >= 0 ? "+" : "−"}${usd(Math.abs(diff))}`}
                   </td>
                   {hasLoan && <td className="py-2 pr-3 text-right text-ink-2">{usd(r.loan)}</td>}
-                  {hasLoan && <td className="py-2 text-right font-medium">{usd(r.equity)}</td>}
+                  {hasLoan && <td className="py-2 pr-3 text-right font-medium">{usd(r.equity)}</td>}
+                  {showCashFlow && (
+                    <td className={`py-2 pr-3 text-right ${r.year === 0 ? "text-muted" : (r.cashFlow ?? 0) >= 0 ? "text-good" : "text-bad"}`}>
+                      {r.year === 0 || r.cashFlow === undefined ? "–" : `${r.cashFlow >= 0 ? "+" : "−"}${usd(Math.abs(r.cashFlow))}`}
+                    </td>
+                  )}
+                  {showCashFlow && <td className="py-2 text-right font-medium">{r.keep === undefined ? "–" : usd(r.keep)}</td>}
                 </tr>
               );
             })}

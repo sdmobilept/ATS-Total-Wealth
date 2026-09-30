@@ -12,6 +12,8 @@ export interface Location {
   sublabel: string;
   /** Price-tier series; county data has only the middle tier. */
   tiers: { bottom: MonthlySeries | null; middle: MonthlySeries; top: MonthlySeries | null };
+  /** Typical monthly rent in the ZIP (Zillow ZORI), when Zillow tracks rents there. */
+  rent: MonthlySeries | null;
   forecast: ZillowForecast | null;
   matchedAddress?: string;
   /** Why we fell back to the county, if we did. */
@@ -74,6 +76,7 @@ export async function resolveLocation(zip: string, countyFipsHint?: string, matc
         middle,
         top: usable(z.tiers.top && decodeSeries(z.tiers.top)),
       },
+      rent: z.rent ? decodeSeries(z.rent) : null,
       forecast: z.forecast,
       matchedAddress,
     };
@@ -89,6 +92,7 @@ export async function resolveLocation(zip: string, countyFipsHint?: string, matc
       label: `${county.name}, ${county.state}`,
       sublabel: `County-level data${zip ? ` for ZIP ${zip}` : ""}`,
       tiers: { bottom: null, middle: countySeries, top: null },
+      rent: z?.rent ? decodeSeries(z.rent) : null,
       forecast: z?.forecast ?? null,
       matchedAddress,
       note: z

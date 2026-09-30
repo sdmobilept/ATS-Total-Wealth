@@ -158,7 +158,32 @@ Range at year t:  median × exp(z · k · σ · t^a)   for t ≤ 5 (calibrated)
         </ul>
       </Section>
 
-      <Section title="5. Limitations">
+      <Section title="5. Risk, cash flow and keep vs. sell">
+        <p>
+          <strong>Monte Carlo.</strong> 2,000 simulated yearly paths. The log value at year <em>t</em> is the median path
+          plus sd(t) × W(t), where sd(t) is the calibrated band and W is a persistent (autocorrelated) shock. Forecast
+          errors in housing persist, which is why the band widens almost linearly at first. The persistence is set so each
+          simulated year moves about as much as the ZIP historically has (its volatility σ), and the simulated
+          10th/50th/90th percentiles match the shaded range at every horizon. The paths then answer
+          questions the band can&apos;t: the chance of beating a flat rate, ending below today&apos;s value, a 20%+ drop along
+          the way, or owing more than the home is worth. Only year-end values are simulated, so dips within a year are
+          missed.
+        </p>
+        <p>
+          <strong>Cash flow.</strong> Rent (defaulting to Zillow&apos;s ZIP rent index and its 5-year trend) minus vacancy,
+          management, property tax, insurance, HOA and maintenance gives net operating income. Subtracting the mortgage
+          payment gives cash flow. For a home you live in, &quot;rent&quot; is what you&apos;d pay to live elsewhere, so the
+          result is the net cost of owning.
+        </p>
+        <p>
+          <strong>Keep vs. sell.</strong> Keeping = equity after selling costs + all cash flows invested at the alternative
+          return. Selling = today&apos;s net proceeds invested at that return. The break-even return is the rate at which
+          the two end equal, the same &quot;what-if&quot; InsMark Wealthy and Wise+ runs, but with the property on its
+          ZIP&apos;s trend. Income taxes, depreciation, capital-gains tax and the home-sale exclusion are not modeled.
+        </p>
+      </Section>
+
+      <Section title="6. Limitations">
         <ul className="list-disc space-y-1 pl-5">
           <li>Not an appraisal: condition, renovations, lot and micro-location aren&apos;t modeled.</li>
           <li>ZHVI is smoothed, so turning points show up a few months late.</li>

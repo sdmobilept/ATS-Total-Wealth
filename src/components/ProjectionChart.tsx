@@ -22,6 +22,8 @@ export interface ChartRow {
   band?: [number, number];
   scenario?: number;
   flat?: number;
+  /** Simulated sample paths, keyed s0, s1, ... */
+  [path: `s${number}`]: number | undefined;
 }
 
 interface Props {
@@ -29,6 +31,8 @@ interface Props {
   nowT: number;
   scenarioLabel: string;
   flatLabel: string;
+  /** Number of simulated sample paths present in the rows (0 = none). */
+  samplePaths?: number;
 }
 
 const SERIES = [
@@ -77,7 +81,7 @@ function ChartTooltip({ active, payload, label, scenarioLabel, flatLabel }: Tool
   );
 }
 
-export function ProjectionChart({ rows, nowT, scenarioLabel, flatLabel }: Props) {
+export function ProjectionChart({ rows, nowT, scenarioLabel, flatLabel, samplePaths = 0 }: Props) {
   const first = rows[0]?.t ?? 0;
   const last = rows[rows.length - 1]?.t ?? 1;
   const ticks: number[] = [];
@@ -105,6 +109,14 @@ export function ProjectionChart({ rows, nowT, scenarioLabel, flatLabel }: Props)
             {s.key === "scenario" ? scenarioLabel : s.key === "flat" ? flatLabel : s.name}
           </span>
         ))}
+        {samplePaths > 0 && (
+          <span className="flex items-center gap-1.5">
+            <svg width="18" height="6" aria-hidden>
+              <line x1="0" y1="3" x2="18" y2="3" stroke="var(--muted)" strokeWidth="1" />
+            </svg>
+            Simulated paths
+          </span>
+        )}
         <span className="flex items-center gap-1.5">
           <span className="inline-block h-2.5 w-4 rounded-sm" style={{ background: "var(--band)" }} />
           80% likely range (10th–90th pct)
@@ -138,6 +150,19 @@ export function ProjectionChart({ rows, nowT, scenarioLabel, flatLabel }: Props)
               cursor={{ stroke: "var(--muted)", strokeWidth: 1 }}
             />
             <Area dataKey="band" stroke="none" fill="var(--band)" isAnimationActive={false} connectNulls />
+            {Array.from({ length: samplePaths }, (_, i) => (
+              <Line
+                key={`s${i}`}
+                dataKey={`s${i}`}
+                stroke="var(--muted)"
+                strokeOpacity={0.35}
+                strokeWidth={1}
+                dot={false}
+                activeDot={false}
+                isAnimationActive={false}
+                tooltipType="none"
+              />
+            ))}
             <ReferenceLine x={nowT} stroke="var(--muted)" strokeDasharray="3 3" label={{ value: "Today", position: "insideTopLeft", fill: "var(--muted)", fontSize: 11 }} />
             <Line dataKey="history" stroke="var(--series-1)" strokeWidth={2} dot={false} isAnimationActive={false} />
             <Line dataKey="median" stroke="var(--series-1)" strokeWidth={2} strokeDasharray="2 3" dot={false} isAnimationActive={false} />

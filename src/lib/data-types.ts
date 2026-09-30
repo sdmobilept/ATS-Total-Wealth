@@ -1,12 +1,13 @@
 // Shapes of the JSON files written by scripts/build-data.ts into public/data.
 
 /**
- * Monthly values rounded to $100 and delta-encoded to keep shards small:
- * d[0] is the first value in hundreds of dollars, d[i] the change from month i-1.
+ * Monthly values rounded to `u` dollars (default $100) and delta-encoded to keep shards small:
+ * d[0] is the first value in units of `u`, d[i] the change from month i-1.
  */
 export interface EncodedSeries {
   start: string;
   d: number[];
+  u?: number;
 }
 
 export interface ZillowForecast {
@@ -28,6 +29,8 @@ export interface ZipRecord {
   countyFips: string | null;
   /** Zillow ZHVI by price tier: bottom third, middle third (the headline index) and top third of homes. */
   tiers: { bottom: EncodedSeries | null; middle: EncodedSeries; top: EncodedSeries | null };
+  /** Zillow Observed Rent Index (typical monthly rent), 2015 on; null where Zillow has no rent data. */
+  rent: EncodedSeries | null;
   forecast: ZillowForecast | null;
 }
 
@@ -53,9 +56,11 @@ export interface MacroData {
   zipCount: number;
 }
 
-export function encodeSeries(start: string, v: number[]): EncodedSeries {
-  const r = v.map((x) => Math.round(x / 100));
-  return { start, d: r.map((x, i) => (i === 0 ? x : x - r[i - 1])) };
+export function encodeSeries(start: string, v: number[], unit = 100): EncodedSeries {
+  const r = v.map((x) => Math.round(x / unit));
+  const out: EncodedSeries = { start, d: r.map((x, i) => (i === 0 ? x : x - r[i - 1])) };
+  if (unit !== 100) out.u = unit;
+  return out;
 }
 
 export function decodeSeries(s: EncodedSeries): { start: string; v: number[] } {
@@ -63,7 +68,7 @@ export function decodeSeries(s: EncodedSeries): { start: string; v: number[] } {
   let acc = 0;
   for (const x of s.d) {
     acc += x;
-    v.push(acc * 100);
+    v.push(acc * (s.u ?? 100));
   }
   return { start: s.start, v };
 }

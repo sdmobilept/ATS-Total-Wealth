@@ -26,6 +26,12 @@ Enter an address or ZIP, plus optionally the **price paid** and **year bought**:
 
 Links carry the inputs: `/?q=<address or ZIP>&paid=<price>&year=<year>`.
 
+## Risk, cash flow and keep vs. sell (Phase 4)
+
+- **Risk: simulated outcomes.** 2,000 simulated market paths, consistent with the calibrated range. They give the chance of beating a flat rate, ending below today's value, a 20%+ drop along the way, and owing more than the home is worth. Sample paths can be shown on the main chart.
+- **Cash flow & keep vs. sell.** Pick *Rental* or *My home*. Rent defaults to Zillow's ZIP rent index (ZORI) and its 5-year trend. The panel shows yearly cash flow, cap rate, net worth if kept vs. sold today and invested, and the break-even return. The year-by-year table and CSV gain cash-flow and net-worth columns.
+- Engine: `src/lib/wealth.ts` (pure functions), tested in `scripts/wealth.test.ts`.
+
 ## Automatic home values (RentCast, optional and currently off)
 
 For a street address, the app gets a property-level value estimate from [RentCast](https://www.rentcast.io/api). The ZIP index still drives the growth trend.
